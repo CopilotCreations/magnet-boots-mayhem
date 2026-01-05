@@ -44,22 +44,38 @@ class Player:
     
     @property
     def position(self) -> Tuple[float, float]:
-        """Get player center position."""
+        """Get player center position.
+
+        Returns:
+            Tuple[float, float]: The (x, y) coordinates of the player's center.
+        """
         return (self.x + self.width / 2, self.y + self.height / 2)
     
     @property
     def rect(self) -> Tuple[float, float, float, float]:
-        """Get player bounding rect."""
+        """Get player bounding rect.
+
+        Returns:
+            Tuple[float, float, float, float]: The (x, y, width, height) bounding rectangle.
+        """
         return (self.x, self.y, self.width, self.height)
     
     @property
     def pygame_rect(self) -> pygame.Rect:
-        """Get player as pygame Rect."""
+        """Get player as pygame Rect.
+
+        Returns:
+            pygame.Rect: The player's bounding box as a pygame Rect object.
+        """
         return pygame.Rect(int(self.x), int(self.y), int(self.width), int(self.height))
     
     @property
     def velocity(self) -> Tuple[float, float]:
-        """Get velocity tuple."""
+        """Get velocity tuple.
+
+        Returns:
+            Tuple[float, float]: The (velocity_x, velocity_y) of the player.
+        """
         return (self.velocity_x, self.velocity_y)
     
     def move(self, horizontal: float, vertical: float = 0) -> None:
@@ -108,19 +124,30 @@ class Player:
         return False
     
     def toggle_magnetic_state(self) -> None:
-        """Toggle magnetic boots on/off."""
+        """Toggle magnetic boots on/off.
+
+        If the player is currently sticking to a surface and boots are deactivated,
+        the player will detach from the surface.
+        """
         self.boots_active = not self.boots_active
         
         if not self.boots_active and self.magnetic_state == MAGNETIC_STATE_STICKING:
             self.detach_from_surface()
     
     def apply_gravity(self) -> None:
-        """Apply gravity to player."""
+        """Apply gravity to player.
+
+        Gravity is only applied when the player is not sticking to a surface.
+        """
         if self.magnetic_state != MAGNETIC_STATE_STICKING:
             self.velocity_y = apply_gravity(self.velocity_y, self.magnetic_state)
     
     def apply_friction(self) -> None:
-        """Apply friction to player movement."""
+        """Apply friction to player movement.
+
+        Friction is applied to horizontal velocity based on whether the player
+        is on the ground.
+        """
         self.velocity_x = apply_friction(self.velocity_x, self.on_ground)
     
     def stick_to_surface(self, platform: Platform, collision_side: str) -> None:
@@ -143,13 +170,23 @@ class Player:
         self.jump_count = 0
     
     def detach_from_surface(self) -> None:
-        """Detach from current surface."""
+        """Detach from current surface.
+
+        Resets the magnetic state to normal and clears the current surface reference.
+        """
         self.magnetic_state = MAGNETIC_STATE_NORMAL
         self.current_surface = None
         self.on_ground = False
     
     def apply_magnetic_force(self, force: Tuple[float, float]) -> None:
-        """Apply external magnetic force to player."""
+        """Apply external magnetic force to player.
+
+        Args:
+            force: A tuple (force_x, force_y) representing the magnetic force vector.
+
+        Note:
+            Force is only applied when the player is not sticking to a surface.
+        """
         if self.magnetic_state != MAGNETIC_STATE_STICKING:
             self.velocity_x += force[0]
             self.velocity_y += force[1]
@@ -201,7 +238,12 @@ class Player:
                 self.detach_from_surface()
     
     def draw(self, surface: pygame.Surface, camera_offset: Tuple[float, float] = (0, 0)) -> None:
-        """Draw the player."""
+        """Draw the player.
+
+        Args:
+            surface: The pygame surface to draw on.
+            camera_offset: The (x, y) offset for camera positioning. Defaults to (0, 0).
+        """
         rect = pygame.Rect(
             int(self.x - camera_offset[0]),
             int(self.y - camera_offset[1]),
@@ -231,7 +273,16 @@ class Player:
         pygame.draw.circle(surface, (255, 255, 255), (int(eye_x), rect.y + 10), 4)
     
     def reset(self, x: float, y: float) -> None:
-        """Reset player to specified position."""
+        """Reset player to specified position.
+
+        Args:
+            x: The X position to reset to.
+            y: The Y position to reset to.
+
+        Note:
+            This resets all player state including velocity, magnetic state,
+            and jump count.
+        """
         self.x = x
         self.y = y
         self.velocity_x = 0

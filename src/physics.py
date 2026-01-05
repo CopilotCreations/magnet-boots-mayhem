@@ -16,14 +16,31 @@ if TYPE_CHECKING:
 
 
 def calculate_distance(pos1: Tuple[float, float], pos2: Tuple[float, float]) -> float:
-    """Calculate Euclidean distance between two points."""
+    """Calculate Euclidean distance between two points.
+
+    Args:
+        pos1: First point as (x, y) coordinates.
+        pos2: Second point as (x, y) coordinates.
+
+    Returns:
+        The Euclidean distance between the two points.
+    """
     dx = pos2[0] - pos1[0]
     dy = pos2[1] - pos1[1]
     return math.sqrt(dx * dx + dy * dy)
 
 
 def calculate_direction(from_pos: Tuple[float, float], to_pos: Tuple[float, float]) -> Tuple[float, float]:
-    """Calculate normalized direction vector from one point to another."""
+    """Calculate normalized direction vector from one point to another.
+
+    Args:
+        from_pos: Starting point as (x, y) coordinates.
+        to_pos: Target point as (x, y) coordinates.
+
+    Returns:
+        A normalized direction vector (dx, dy) pointing from from_pos to to_pos.
+        Returns (0.0, 0.0) if the points are identical.
+    """
     dx = to_pos[0] - from_pos[0]
     dy = to_pos[1] - from_pos[1]
     distance = calculate_distance(from_pos, to_pos)
@@ -35,7 +52,17 @@ def calculate_direction(from_pos: Tuple[float, float], to_pos: Tuple[float, floa
 
 
 def apply_gravity(velocity_y: float, magnetic_state: str, surface_orientation: Optional[str] = None) -> float:
-    """Apply gravity to vertical velocity based on magnetic state."""
+    """Apply gravity to vertical velocity based on magnetic state.
+
+    Args:
+        velocity_y: Current vertical velocity.
+        magnetic_state: The player's magnetic state (e.g., MAGNETIC_STATE_STICKING).
+        surface_orientation: Optional orientation of the surface the player is on.
+
+    Returns:
+        The updated vertical velocity after applying gravity, capped at MAX_FALL_SPEED.
+        Returns 0.0 if the player is in MAGNETIC_STATE_STICKING.
+    """
     if magnetic_state == MAGNETIC_STATE_STICKING:
         return 0.0
     
@@ -44,7 +71,16 @@ def apply_gravity(velocity_y: float, magnetic_state: str, surface_orientation: O
 
 
 def apply_friction(velocity_x: float, on_ground: bool) -> float:
-    """Apply friction to horizontal velocity."""
+    """Apply friction to horizontal velocity.
+
+    Args:
+        velocity_x: Current horizontal velocity.
+        on_ground: Whether the player is on the ground.
+
+    Returns:
+        The updated horizontal velocity after applying friction (ground) or
+        air resistance (airborne).
+    """
     if on_ground:
         return velocity_x * FRICTION
     return velocity_x * AIR_RESISTANCE
@@ -57,7 +93,22 @@ def calculate_magnetic_force(
     magnet_strength: float,
     polarity: str
 ) -> Tuple[float, float]:
-    """Calculate magnetic force applied to an object."""
+    """Calculate magnetic force applied to an object.
+
+    Uses an inverse square law approximation where force decreases with
+    distance squared relative to the magnet's range.
+
+    Args:
+        object_pos: Position of the affected object as (x, y) coordinates.
+        magnet_pos: Position of the magnet as (x, y) coordinates.
+        magnet_range: Maximum effective range of the magnet.
+        magnet_strength: Base strength of the magnetic force.
+        polarity: Magnetic polarity (POLARITY_ATTRACT or POLARITY_REPEL).
+
+    Returns:
+        A force vector (fx, fy) representing the magnetic force. Returns
+        (0.0, 0.0) if the object is out of range or at the magnet's position.
+    """
     distance = calculate_distance(object_pos, magnet_pos)
     
     if distance > magnet_range or distance == 0:
@@ -79,7 +130,15 @@ def check_rect_collision(
     rect1: Tuple[float, float, float, float],
     rect2: Tuple[float, float, float, float]
 ) -> bool:
-    """Check if two rectangles collide. Rect format: (x, y, width, height)."""
+    """Check if two rectangles collide.
+
+    Args:
+        rect1: First rectangle as (x, y, width, height).
+        rect2: Second rectangle as (x, y, width, height).
+
+    Returns:
+        True if the rectangles overlap, False otherwise.
+    """
     x1, y1, w1, h1 = rect1
     x2, y2, w2, h2 = rect2
     
@@ -94,9 +153,23 @@ def resolve_collision(
     platform_rect: Tuple[float, float, float, float],
     velocity: Tuple[float, float]
 ) -> Tuple[Tuple[float, float], Tuple[float, float], str]:
-    """
-    Resolve collision between player and platform.
-    Returns: (new_position, new_velocity, collision_side)
+    """Resolve collision between player and platform.
+
+    Determines the collision side based on minimum overlap and adjusts the
+    player's position and velocity accordingly.
+
+    Args:
+        player_rect: Player's bounding box as (x, y, width, height).
+        platform_rect: Platform's bounding box as (x, y, width, height).
+        velocity: Player's current velocity as (vx, vy).
+
+    Returns:
+        A tuple containing:
+            - new_position: Updated player position as (x, y).
+            - new_velocity: Updated player velocity as (vx, vy).
+            - collision_side: The side of collision (ORIENTATION_FLOOR,
+              ORIENTATION_CEILING, ORIENTATION_WALL_LEFT, or
+              ORIENTATION_WALL_RIGHT), or empty string if no resolution.
     """
     px, py, pw, ph = player_rect
     plat_x, plat_y, plat_w, plat_h = platform_rect
@@ -136,7 +209,16 @@ def resolve_collision(
 
 
 def get_surface_normal(orientation: str) -> Tuple[float, float]:
-    """Get the normal vector for a surface orientation."""
+    """Get the normal vector for a surface orientation.
+
+    Args:
+        orientation: The surface orientation constant (ORIENTATION_FLOOR,
+            ORIENTATION_CEILING, ORIENTATION_WALL_LEFT, or ORIENTATION_WALL_RIGHT).
+
+    Returns:
+        A unit normal vector (nx, ny) pointing away from the surface.
+        Defaults to (0, -1) for unknown orientations.
+    """
     normals = {
         ORIENTATION_FLOOR: (0, -1),
         ORIENTATION_CEILING: (0, 1),
@@ -150,7 +232,19 @@ def apply_surface_gravity(
     velocity: Tuple[float, float],
     orientation: str
 ) -> Tuple[float, float]:
-    """Apply gravity relative to the surface the player is stuck to."""
+    """Apply gravity relative to the surface the player is stuck to.
+
+    Gravity is applied in the direction appropriate for the surface
+    orientation, allowing the player to walk on walls and ceilings.
+
+    Args:
+        velocity: Current velocity as (vx, vy).
+        orientation: The surface orientation the player is attached to.
+
+    Returns:
+        Updated velocity (vx, vy) with gravity applied relative to the surface,
+        capped at MAX_FALL_SPEED in the appropriate direction.
+    """
     vx, vy = velocity
     
     if orientation == ORIENTATION_FLOOR:
@@ -166,5 +260,14 @@ def apply_surface_gravity(
 
 
 def clamp(value: float, min_val: float, max_val: float) -> float:
-    """Clamp a value between min and max."""
+    """Clamp a value between min and max.
+
+    Args:
+        value: The value to clamp.
+        min_val: The minimum allowed value.
+        max_val: The maximum allowed value.
+
+    Returns:
+        The clamped value, guaranteed to be within [min_val, max_val].
+    """
     return max(min_val, min(value, max_val))

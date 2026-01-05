@@ -58,7 +58,14 @@ class InputHandler:
                 self.keys_just_released.add(event.key)
     
     def is_action_pressed(self, action: str) -> bool:
-        """Check if an action's key is currently pressed."""
+        """Check if an action's key is currently pressed.
+        
+        Args:
+            action: The name of the action to check.
+            
+        Returns:
+            True if the action's key (or alt key) is currently pressed.
+        """
         key = self.bindings.get(action)
         alt_key = self.bindings.get(f"{action}_alt")
         
@@ -69,7 +76,14 @@ class InputHandler:
         return False
     
     def is_action_just_pressed(self, action: str) -> bool:
-        """Check if an action's key was just pressed this frame."""
+        """Check if an action's key was just pressed this frame.
+        
+        Args:
+            action: The name of the action to check.
+            
+        Returns:
+            True if the action's key (or alt key) was just pressed this frame.
+        """
         key = self.bindings.get(action)
         alt_key = self.bindings.get(f"{action}_alt")
         
@@ -80,7 +94,14 @@ class InputHandler:
         return False
     
     def is_action_just_released(self, action: str) -> bool:
-        """Check if an action's key was just released this frame."""
+        """Check if an action's key was just released this frame.
+        
+        Args:
+            action: The name of the action to check.
+            
+        Returns:
+            True if the action's key (or alt key) was just released this frame.
+        """
         key = self.bindings.get(action)
         alt_key = self.bindings.get(f"{action}_alt")
         
@@ -112,22 +133,44 @@ class InputHandler:
         return (horizontal, vertical)
     
     def set_binding(self, action: str, key: int) -> None:
-        """Set a custom key binding for an action."""
+        """Set a custom key binding for an action.
+        
+        Args:
+            action: The name of the action to bind.
+            key: The pygame key code to bind to the action.
+        """
         self.bindings[action] = key
     
     def get_binding(self, action: str) -> Optional[int]:
-        """Get the key code for an action."""
+        """Get the key code for an action.
+        
+        Args:
+            action: The name of the action to look up.
+            
+        Returns:
+            The pygame key code for the action, or None if not bound.
+        """
         return self.bindings.get(action)
     
     def get_binding_name(self, action: str) -> str:
-        """Get human-readable name for an action's key binding."""
+        """Get human-readable name for an action's key binding.
+        
+        Args:
+            action: The name of the action to look up.
+            
+        Returns:
+            The uppercase name of the key, or "Unbound" if not set.
+        """
         key = self.bindings.get(action)
         if key is None:
             return "Unbound"
         return pygame.key.name(key).upper()
     
     def reset_to_defaults(self) -> None:
-        """Reset all bindings to defaults."""
+        """Reset all bindings to defaults.
+        
+        Restores all key bindings to their original DEFAULT_BINDINGS values.
+        """
         self.bindings = self.DEFAULT_BINDINGS.copy()
 
 
@@ -135,27 +178,57 @@ class InputAction:
     """Represents an input action with callbacks."""
     
     def __init__(self, name: str):
+        """Initialize an input action with a name.
+        
+        Args:
+            name: The name of the action.
+        """
         self.name = name
         self.on_pressed: Optional[Callable] = None
         self.on_released: Optional[Callable] = None
         self.on_held: Optional[Callable] = None
     
     def bind_pressed(self, callback: Callable) -> 'InputAction':
-        """Bind a callback to key press."""
+        """Bind a callback to key press.
+        
+        Args:
+            callback: The function to call when the key is pressed.
+            
+        Returns:
+            Self for method chaining.
+        """
         self.on_pressed = callback
         return self
     
     def bind_released(self, callback: Callable) -> 'InputAction':
-        """Bind a callback to key release."""
+        """Bind a callback to key release.
+        
+        Args:
+            callback: The function to call when the key is released.
+            
+        Returns:
+            Self for method chaining.
+        """
         self.on_released = callback
         return self
     
     def bind_held(self, callback: Callable) -> 'InputAction':
-        """Bind a callback to key held."""
+        """Bind a callback to key held.
+        
+        Args:
+            callback: The function to call while the key is held.
+            
+        Returns:
+            Self for method chaining.
+        """
         self.on_held = callback
         return self
 
 
 def create_game_input_handler() -> InputHandler:
-    """Create and return a configured input handler for the game."""
+    """Create and return a configured input handler for the game.
+    
+    Returns:
+        A new InputHandler instance with default game bindings.
+    """
     return InputHandler()

@@ -33,7 +33,11 @@ class Camera:
     
     @property
     def offset(self) -> Tuple[float, float]:
-        """Get camera offset for rendering."""
+        """Get camera offset for rendering.
+        
+        Returns:
+            Tuple containing the x and y offset values.
+        """
         return (self.x, self.y)
     
     def follow(self, target_x: float, target_y: float, level_width: int, level_height: int) -> None:
@@ -59,7 +63,12 @@ class Camera:
         self.y = max(0, min(self.y, level_height - self.height))
     
     def reset(self, x: float = 0, y: float = 0) -> None:
-        """Reset camera position."""
+        """Reset camera position.
+        
+        Args:
+            x: New x position. Defaults to 0.
+            y: New y position. Defaults to 0.
+        """
         self.x = x
         self.y = y
 
@@ -81,7 +90,11 @@ class Renderer:
         self._init_fonts()
     
     def _init_fonts(self) -> None:
-        """Initialize fonts."""
+        """Initialize fonts.
+        
+        Initializes the main font and small font for text rendering.
+        Silently handles pygame errors if font initialization fails.
+        """
         try:
             pygame.font.init()
             self.font = pygame.font.Font(None, 36)
@@ -90,11 +103,22 @@ class Renderer:
             pass
     
     def clear(self, color: Tuple[int, int, int] = COLOR_BLACK) -> None:
-        """Clear the screen with a color."""
+        """Clear the screen with a color.
+        
+        Args:
+            color: RGB tuple for the fill color. Defaults to COLOR_BLACK.
+        """
         self.screen.fill(color)
     
     def draw_level(self, level: Level) -> None:
-        """Draw entire level."""
+        """Draw entire level.
+        
+        Renders all level components including background, magnets, platforms,
+        goal, and enemies.
+        
+        Args:
+            level: The Level object to render.
+        """
         self.clear(level.background_color)
         
         # Draw magnets (with range indicators)
@@ -113,11 +137,21 @@ class Renderer:
             enemy.draw(self.screen, self.camera.offset)
     
     def draw_player(self, player: Player) -> None:
-        """Draw the player."""
+        """Draw the player.
+        
+        Args:
+            player: The Player object to render.
+        """
         player.draw(self.screen, self.camera.offset)
     
     def draw_goal(self, goal_rect: Tuple[float, float, float, float]) -> None:
-        """Draw the level goal."""
+        """Draw the level goal.
+        
+        Renders the goal area with a colored rectangle and a centered star indicator.
+        
+        Args:
+            goal_rect: Tuple of (x, y, width, height) defining the goal area.
+        """
         x, y, w, h = goal_rect
         rect = pygame.Rect(
             int(x - self.camera.offset[0]),
@@ -134,7 +168,14 @@ class Renderer:
         pygame.draw.circle(self.screen, COLOR_WHITE, (center_x, center_y), 10)
     
     def draw_hud(self, player: Player, level_name: str = "") -> None:
-        """Draw heads-up display."""
+        """Draw heads-up display.
+        
+        Renders the HUD including level name and magnetic boots state indicator.
+        
+        Args:
+            player: The Player object to display status for.
+            level_name: Name of the current level to display. Defaults to empty string.
+        """
         if not self.font:
             return
         
@@ -161,7 +202,15 @@ class Renderer:
         color: Tuple[int, int, int] = COLOR_WHITE,
         font: Optional[pygame.font.Font] = None
     ) -> None:
-        """Draw text at specified position."""
+        """Draw text at specified position.
+        
+        Args:
+            text: The text string to render.
+            x: X coordinate for text position.
+            y: Y coordinate for text position.
+            color: RGB tuple for text color. Defaults to COLOR_WHITE.
+            font: Font to use for rendering. Defaults to self.font if None.
+        """
         if font is None:
             font = self.font
         if font is None:
@@ -177,7 +226,14 @@ class Renderer:
         color: Tuple[int, int, int] = COLOR_WHITE,
         font: Optional[pygame.font.Font] = None
     ) -> None:
-        """Draw text centered horizontally."""
+        """Draw text centered horizontally.
+        
+        Args:
+            text: The text string to render.
+            y: Y coordinate for text position.
+            color: RGB tuple for text color. Defaults to COLOR_WHITE.
+            font: Font to use for rendering. Defaults to self.font if None.
+        """
         if font is None:
             font = self.font
         if font is None:
@@ -188,7 +244,15 @@ class Renderer:
         self.screen.blit(surface, (x, y))
     
     def draw_menu(self, title: str, options: List[str], selected: int) -> None:
-        """Draw a menu screen."""
+        """Draw a menu screen.
+        
+        Renders a menu with a title and selectable options.
+        
+        Args:
+            title: The menu title to display.
+            options: List of menu option strings.
+            selected: Index of the currently selected option.
+        """
         self.clear((20, 20, 30))
         
         # Draw title
@@ -203,7 +267,10 @@ class Renderer:
             self.draw_centered_text(option, y, color)
     
     def draw_pause_overlay(self) -> None:
-        """Draw pause screen overlay."""
+        """Draw pause screen overlay.
+        
+        Renders a semi-transparent overlay with pause text and control hints.
+        """
         # Semi-transparent overlay
         overlay = pygame.Surface(self.screen.get_size(), pygame.SRCALPHA)
         overlay.fill((0, 0, 0, 150))
@@ -219,7 +286,13 @@ class Renderer:
             )
     
     def draw_game_over(self, won: bool) -> None:
-        """Draw game over screen."""
+        """Draw game over screen.
+        
+        Renders a game over overlay showing win or lose state with restart hints.
+        
+        Args:
+            won: True if the player won, False if the player lost.
+        """
         overlay = pygame.Surface(self.screen.get_size(), pygame.SRCALPHA)
         overlay.fill((0, 0, 0, 180))
         self.screen.blit(overlay, (0, 0))
@@ -237,7 +310,12 @@ class Renderer:
             )
     
     def update_camera(self, player: Player, level: Level) -> None:
-        """Update camera to follow player."""
+        """Update camera to follow player.
+        
+        Args:
+            player: The Player object for the camera to follow.
+            level: The Level object for boundary constraints.
+        """
         self.camera.follow(
             player.x + player.width / 2,
             player.y + player.height / 2,
@@ -246,5 +324,8 @@ class Renderer:
         )
     
     def present(self) -> None:
-        """Present the rendered frame."""
+        """Present the rendered frame.
+        
+        Flips the display buffer to show the rendered content.
+        """
         pygame.display.flip()

@@ -36,29 +36,57 @@ class Level:
         self.background_color = (30, 30, 40)
     
     def add_platform(self, platform: Platform) -> None:
-        """Add a platform to the level."""
+        """Add a platform to the level.
+
+        Args:
+            platform: The platform to add to the level's platform list.
+        """
         self.platforms.append(platform)
     
     def add_magnet(self, magnet: Magnet) -> None:
-        """Add a magnet to the level."""
+        """Add a magnet to the level.
+
+        Args:
+            magnet: The magnet to add to the level's magnet list.
+        """
         self.magnets.append(magnet)
     
     def add_enemy(self, enemy: Enemy) -> None:
-        """Add an enemy to the level."""
+        """Add an enemy to the level.
+
+        Args:
+            enemy: The enemy to add to the level's enemy list.
+        """
         self.enemies.append(enemy)
     
     def set_player_start(self, x: float, y: float) -> None:
-        """Set player starting position."""
+        """Set player starting position.
+
+        Args:
+            x: The x-coordinate for the player's starting position.
+            y: The y-coordinate for the player's starting position.
+        """
         self.player_start = (x, y)
     
     def set_goal(self, x: float, y: float, width: float = 50, height: float = 50) -> None:
-        """Set goal position and size."""
+        """Set goal position and size.
+
+        Args:
+            x: The x-coordinate for the goal position.
+            y: The y-coordinate for the goal position.
+            width: The width of the goal area. Defaults to 50.
+            height: The height of the goal area. Defaults to 50.
+        """
         self.goal_position = (x, y)
         self.goal_size = (width, height)
     
     @property
     def goal_rect(self) -> Tuple[float, float, float, float]:
-        """Get goal bounding rect."""
+        """Get goal bounding rect.
+
+        Returns:
+            A tuple containing (x, y, width, height) of the goal area.
+        """
         return (
             self.goal_position[0],
             self.goal_position[1],
@@ -67,7 +95,14 @@ class Level:
         )
     
     def get_total_magnetic_force(self, position: Tuple[float, float]) -> Tuple[float, float]:
-        """Calculate total magnetic force at a position from all magnets."""
+        """Calculate total magnetic force at a position from all magnets.
+
+        Args:
+            position: The (x, y) position to calculate force at.
+
+        Returns:
+            A tuple (fx, fy) representing the total magnetic force vector.
+        """
         total_fx, total_fy = 0.0, 0.0
         
         for magnet in self.magnets:
@@ -78,7 +113,11 @@ class Level:
         return (total_fx, total_fy)
     
     def update(self) -> None:
-        """Update all level elements."""
+        """Update all level elements.
+
+        Updates moving platforms and enemies, applying magnetic forces to
+        magnetic enemies.
+        """
         # Update moving platforms
         for platform in self.platforms:
             if isinstance(platform, MovingPlatform):
@@ -93,7 +132,11 @@ class Level:
             enemy.update(self.platforms)
     
     def to_dict(self) -> Dict[str, Any]:
-        """Serialize level to dictionary."""
+        """Serialize level to dictionary.
+
+        Returns:
+            A dictionary containing all level data suitable for JSON serialization.
+        """
         return {
             'name': self.name,
             'width': self.width,
@@ -108,13 +151,25 @@ class Level:
         }
     
     def save(self, filepath: str) -> None:
-        """Save level to JSON file."""
+        """Save level to JSON file.
+
+        Args:
+            filepath: The path to the file where the level will be saved.
+        """
         with open(filepath, 'w') as f:
             json.dump(self.to_dict(), f, indent=2)
     
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> 'Level':
-        """Create level from dictionary."""
+        """Create level from dictionary.
+
+        Args:
+            data: A dictionary containing level data with keys for name,
+                dimensions, platforms, magnets, enemies, etc.
+
+        Returns:
+            A new Level instance populated with the provided data.
+        """
         level = cls(name=data.get('name', 'Untitled'))
         level.width = data.get('width', SCREEN_WIDTH)
         level.height = data.get('height', SCREEN_HEIGHT)
@@ -142,14 +197,28 @@ class Level:
     
     @classmethod
     def load(cls, filepath: str) -> 'Level':
-        """Load level from JSON file."""
+        """Load level from JSON file.
+
+        Args:
+            filepath: The path to the JSON file to load.
+
+        Returns:
+            A new Level instance populated with data from the file.
+        """
         with open(filepath, 'r') as f:
             data = json.load(f)
         return cls.from_dict(data)
 
 
 def create_demo_level() -> Level:
-    """Create a demo level showcasing magnetic mechanics."""
+    """Create a demo level showcasing magnetic mechanics.
+
+    Creates a level with multiple platforms, magnetic walls, ceiling sections,
+    floating platforms, and magnets to demonstrate the game's magnetic mechanics.
+
+    Returns:
+        A Level instance configured as a demo level.
+    """
     level = Level(name="Demo Level")
     level.width = 1200
     level.height = 800
@@ -186,7 +255,14 @@ def create_demo_level() -> Level:
 
 
 def create_tutorial_level() -> Level:
-    """Create a simple tutorial level."""
+    """Create a simple tutorial level.
+
+    Creates a basic level with minimal obstacles suitable for teaching
+    players the core mechanics of the game.
+
+    Returns:
+        A Level instance configured as a tutorial level.
+    """
     level = Level(name="Tutorial")
     level.width = 800
     level.height = 600

@@ -41,23 +41,37 @@ class Platform:
     
     @property
     def rect(self) -> Tuple[float, float, float, float]:
-        """Get platform bounding rect."""
+        """Get platform bounding rect.
+
+        Returns:
+            Tuple containing (x, y, width, height) of the platform.
+        """
         return (self.x, self.y, self.width, self.height)
     
     @property
     def pygame_rect(self) -> pygame.Rect:
-        """Get platform as pygame Rect."""
+        """Get platform as pygame Rect.
+
+        Returns:
+            A pygame.Rect object representing the platform bounds.
+        """
         return pygame.Rect(int(self.x), int(self.y), int(self.width), int(self.height))
     
     @property
     def center(self) -> Tuple[float, float]:
-        """Get platform center position."""
+        """Get platform center position.
+
+        Returns:
+            Tuple containing (x, y) coordinates of the platform center.
+        """
         return (self.x + self.width / 2, self.y + self.height / 2)
     
     def get_surface_position(self) -> Tuple[float, float, str]:
-        """
-        Get the position and side where player would stick.
-        Returns: (x, y, side)
+        """Get the position and side where player would stick.
+
+        Returns:
+            Tuple containing (x, y, side) where side is one of
+            "top", "bottom", "left", or "right".
         """
         if self.orientation == ORIENTATION_FLOOR:
             return (self.x + self.width / 2, self.y, "top")
@@ -74,12 +88,15 @@ class Platform:
         player_rect: Tuple[float, float, float, float],
         tolerance: float = 5.0
     ) -> bool:
-        """
-        Check if player is on this platform's surface.
-        
+        """Check if player is on this platform's surface.
+
         Args:
-            player_rect: Player bounding box (x, y, width, height)
-            tolerance: Distance tolerance for contact detection
+            player_rect: Player bounding box (x, y, width, height).
+            tolerance: Distance tolerance for contact detection.
+
+        Returns:
+            True if player is within tolerance of the platform surface,
+            False otherwise.
         """
         px, py, pw, ph = player_rect
         
@@ -106,13 +123,23 @@ class Platform:
         return False
     
     def get_color(self) -> Tuple[int, int, int]:
-        """Get platform color based on magnetic state."""
+        """Get platform color based on magnetic state.
+
+        Returns:
+            RGB tuple for the platform color. Returns magnetic color
+            if platform is magnetic, otherwise returns normal color.
+        """
         if self.is_magnetic:
             return COLOR_MAGNETIC_PLATFORM
         return COLOR_PLATFORM
     
     def draw(self, surface: pygame.Surface, camera_offset: Tuple[float, float] = (0, 0)) -> None:
-        """Draw the platform."""
+        """Draw the platform.
+
+        Args:
+            surface: The pygame surface to draw on.
+            camera_offset: Tuple (x, y) offset for camera scrolling.
+        """
         rect = pygame.Rect(
             int(self.x - camera_offset[0]),
             int(self.y - camera_offset[1]),
@@ -126,7 +153,11 @@ class Platform:
             pygame.draw.rect(surface, (150, 150, 255), rect, 3)
     
     def to_dict(self) -> dict:
-        """Serialize platform to dictionary."""
+        """Serialize platform to dictionary.
+
+        Returns:
+            Dictionary containing all platform properties.
+        """
         return {
             'x': self.x,
             'y': self.y,
@@ -138,7 +169,14 @@ class Platform:
     
     @classmethod
     def from_dict(cls, data: dict) -> 'Platform':
-        """Create platform from dictionary."""
+        """Create platform from dictionary.
+
+        Args:
+            data: Dictionary containing platform properties.
+
+        Returns:
+            A new Platform instance.
+        """
         return cls(
             x=data['x'],
             y=data['y'],
@@ -164,6 +202,19 @@ class MovingPlatform(Platform):
         is_magnetic: bool = False,
         orientation: str = ORIENTATION_FLOOR
     ):
+        """Initialize a moving platform.
+
+        Args:
+            x: Initial X position (top-left).
+            y: Initial Y position (top-left).
+            width: Platform width.
+            height: Platform height.
+            end_x: Destination X position.
+            end_y: Destination Y position.
+            speed: Movement speed multiplier.
+            is_magnetic: Whether player can stick to this surface.
+            orientation: Surface orientation for gravity/movement.
+        """
         super().__init__(x, y, width, height, is_magnetic, orientation)
         self.start_x = x
         self.start_y = y
@@ -174,7 +225,11 @@ class MovingPlatform(Platform):
         self.progress = 0.0  # 0 to 1
     
     def update(self) -> None:
-        """Update platform position."""
+        """Update platform position.
+
+        Moves the platform along its path between start and end points.
+        Reverses direction when reaching either endpoint.
+        """
         self.progress += self.speed * self.direction * 0.01
         
         if self.progress >= 1.0:
@@ -188,13 +243,22 @@ class MovingPlatform(Platform):
         self.y = self.start_y + (self.end_y - self.start_y) * self.progress
     
     def get_velocity(self) -> Tuple[float, float]:
-        """Get current platform velocity."""
+        """Get current platform velocity.
+
+        Returns:
+            Tuple containing (dx, dy) velocity components.
+        """
         dx = (self.end_x - self.start_x) * self.speed * 0.01 * self.direction
         dy = (self.end_y - self.start_y) * self.speed * 0.01 * self.direction
         return (dx, dy)
     
     def to_dict(self) -> dict:
-        """Serialize moving platform to dictionary."""
+        """Serialize moving platform to dictionary.
+
+        Returns:
+            Dictionary containing all moving platform properties,
+            including inherited Platform properties.
+        """
         data = super().to_dict()
         data.update({
             'end_x': self.end_x,
@@ -206,7 +270,14 @@ class MovingPlatform(Platform):
     
     @classmethod
     def from_dict(cls, data: dict) -> 'MovingPlatform':
-        """Create moving platform from dictionary."""
+        """Create moving platform from dictionary.
+
+        Args:
+            data: Dictionary containing moving platform properties.
+
+        Returns:
+            A new MovingPlatform instance.
+        """
         return cls(
             x=data['x'],
             y=data['y'],

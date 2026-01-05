@@ -57,14 +57,21 @@ class Game:
         self._load_levels()
     
     def _load_levels(self) -> None:
-        """Load all game levels."""
+        """Load all game levels.
+        
+        Initializes the levels list with tutorial and demo levels.
+        """
         self.levels = [
             create_tutorial_level(),
             create_demo_level()
         ]
     
     def _start_level(self, level_index: int) -> None:
-        """Start a specific level."""
+        """Start a specific level.
+        
+        Args:
+            level_index: The index of the level to start in the levels list.
+        """
         if 0 <= level_index < len(self.levels):
             self.current_level_index = level_index
             self.current_level = self.levels[level_index]
@@ -73,7 +80,10 @@ class Game:
             self.state = GameState.PLAYING
     
     def _restart_level(self) -> None:
-        """Restart the current level."""
+        """Restart the current level.
+        
+        Resets player position, camera, game state, and revives all enemies.
+        """
         if self.current_level and self.player:
             self.player.reset(*self.current_level.player_start)
             self.renderer.camera.reset()
@@ -84,7 +94,10 @@ class Game:
                 enemy.alive = True
     
     def _next_level(self) -> None:
-        """Advance to the next level."""
+        """Advance to the next level.
+        
+        If all levels are complete, returns to the main menu.
+        """
         next_index = self.current_level_index + 1
         if next_index < len(self.levels):
             self._start_level(next_index)
@@ -93,7 +106,13 @@ class Game:
             self.state = GameState.MENU
     
     def handle_events(self) -> List:
-        """Handle pygame events."""
+        """Handle pygame events.
+        
+        Processes quit events and updates the input handler.
+        
+        Returns:
+            List of pygame events that occurred this frame.
+        """
         events = pygame.event.get()
         
         for event in events:
@@ -104,7 +123,10 @@ class Game:
         return events
     
     def update_menu(self) -> None:
-        """Update menu state."""
+        """Update menu state.
+        
+        Handles menu navigation and selection using up/down keys and jump to confirm.
+        """
         if self.input_handler.is_action_just_pressed('move_up'):
             self.menu_selection = (self.menu_selection - 1) % len(self.menu_options)
         elif self.input_handler.is_action_just_pressed('move_down'):
@@ -118,7 +140,11 @@ class Game:
                 self.running = False
     
     def update_playing(self) -> None:
-        """Update game playing state."""
+        """Update game playing state.
+        
+        Handles player input, physics, enemy collisions, goal detection,
+        and camera updates during active gameplay.
+        """
         if not self.player or not self.current_level:
             return
         
@@ -173,28 +199,41 @@ class Game:
         self.renderer.update_camera(self.player, self.current_level)
     
     def update_paused(self) -> None:
-        """Update paused state."""
+        """Update paused state.
+        
+        Handles unpausing the game or restarting the level.
+        """
         if self.input_handler.is_action_just_pressed('pause'):
             self.state = GameState.PLAYING
         elif self.input_handler.is_action_just_pressed('restart'):
             self._restart_level()
     
     def update_level_complete(self) -> None:
-        """Update level complete state."""
+        """Update level complete state.
+        
+        Handles advancing to the next level or returning to the menu.
+        """
         if self.input_handler.is_action_just_pressed('jump'):
             self._next_level()
         elif self.input_handler.is_action_just_pressed('pause'):
             self.state = GameState.MENU
     
     def update_game_over(self) -> None:
-        """Update game over state."""
+        """Update game over state.
+        
+        Handles restarting the level or returning to the menu.
+        """
         if self.input_handler.is_action_just_pressed('restart'):
             self._restart_level()
         elif self.input_handler.is_action_just_pressed('pause'):
             self.state = GameState.MENU
     
     def update(self) -> None:
-        """Update game state."""
+        """Update game state.
+        
+        Delegates to the appropriate state-specific update method based on
+        the current game state.
+        """
         if self.state == GameState.MENU:
             self.update_menu()
         elif self.state == GameState.PLAYING:
@@ -207,7 +246,11 @@ class Game:
             self.update_game_over()
     
     def render(self) -> None:
-        """Render the current game state."""
+        """Render the current game state.
+        
+        Draws the appropriate visuals based on the current game state,
+        including menu, gameplay, pause overlay, or game over screens.
+        """
         if self.state == GameState.MENU:
             self.renderer.draw_menu(TITLE, self.menu_options, self.menu_selection)
         
@@ -239,7 +282,11 @@ class Game:
         self.renderer.present()
     
     def run(self) -> None:
-        """Main game loop."""
+        """Main game loop.
+        
+        Continuously processes events, updates state, and renders frames
+        until the game is terminated. Cleans up pygame on exit.
+        """
         while self.running:
             self.handle_events()
             self.update()
@@ -250,7 +297,10 @@ class Game:
 
 
 def main() -> None:
-    """Entry point for the game."""
+    """Entry point for the game.
+    
+    Creates a Game instance and starts the main game loop.
+    """
     game = Game()
     game.run()
 

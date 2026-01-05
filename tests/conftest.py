@@ -8,7 +8,15 @@ import sys
 # Mock pygame for testing
 @pytest.fixture(autouse=True)
 def mock_pygame():
-    """Auto-mock pygame for all tests."""
+    """Auto-mock pygame for all tests.
+
+    This fixture automatically patches pygame in sys.modules for all tests,
+    providing mock constants for keyboard keys, events, and display functions.
+
+    Yields:
+        MagicMock: A mock pygame module with predefined key constants
+            and mock implementations for Surface, Rect, Font, and display.
+    """
     pygame_mock = MagicMock()
     pygame_mock.K_LEFT = 276
     pygame_mock.K_RIGHT = 275
@@ -49,7 +57,14 @@ def mock_pygame():
 
 @pytest.fixture
 def sample_platform():
-    """Create a sample platform for testing."""
+    """Create a sample platform for testing.
+
+    Creates a magnetic floor platform at position (100, 200) with
+    dimensions 150x30 pixels.
+
+    Returns:
+        Platform: A magnetic floor platform instance for use in tests.
+    """
     from src.platforms import Platform
     from src.constants import ORIENTATION_FLOOR
     return Platform(100, 200, 150, 30, is_magnetic=True, orientation=ORIENTATION_FLOOR)
@@ -57,7 +72,14 @@ def sample_platform():
 
 @pytest.fixture
 def sample_magnet():
-    """Create a sample magnet for testing."""
+    """Create a sample magnet for testing.
+
+    Creates an attractive magnet at position (100, 100) with a range
+    of 150 pixels and full strength.
+
+    Returns:
+        Magnet: An attractive polarity magnet instance for use in tests.
+    """
     from src.magnets import Magnet
     from src.constants import POLARITY_ATTRACT
     return Magnet(100, 100, POLARITY_ATTRACT, range_=150, strength=1.0)
@@ -65,21 +87,41 @@ def sample_magnet():
 
 @pytest.fixture
 def sample_player():
-    """Create a sample player for testing."""
+    """Create a sample player for testing.
+
+    Creates a player instance at position (100, 200).
+
+    Returns:
+        Player: A player instance for use in tests.
+    """
     from src.player import Player
     return Player(100, 200)
 
 
 @pytest.fixture
 def sample_enemy():
-    """Create a sample enemy for testing."""
+    """Create a sample enemy for testing.
+
+    Creates an enemy instance at position (100, 200).
+
+    Returns:
+        Enemy: An enemy instance for use in tests.
+    """
     from src.enemies import Enemy
     return Enemy(100, 200)
 
 
 @pytest.fixture
 def sample_level():
-    """Create a sample level for testing."""
+    """Create a sample level for testing.
+
+    Creates a basic level with a floor platform at the bottom, a player
+    start position on the left, and a goal area on the right.
+
+    Returns:
+        Level: A level instance with one platform, player start at (100, 500),
+            and goal at (700, 500) for use in tests.
+    """
     from src.level import Level
     from src.platforms import Platform
     

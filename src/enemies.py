@@ -46,27 +46,50 @@ class Enemy:
     
     @property
     def position(self) -> Tuple[float, float]:
-        """Get enemy center position."""
+        """Get enemy center position.
+
+        Returns:
+            Tuple[float, float]: The (x, y) coordinates of the enemy's center.
+        """
         return (self.x + self.width / 2, self.y + self.height / 2)
     
     @property
     def rect(self) -> Tuple[float, float, float, float]:
-        """Get enemy bounding rect."""
+        """Get enemy bounding rect.
+
+        Returns:
+            Tuple[float, float, float, float]: The (x, y, width, height) bounding rectangle.
+        """
         return (self.x, self.y, self.width, self.height)
     
     @property
     def pygame_rect(self) -> pygame.Rect:
-        """Get enemy as pygame Rect."""
+        """Get enemy as pygame Rect.
+
+        Returns:
+            pygame.Rect: The enemy's bounding rectangle as a pygame Rect object.
+        """
         return pygame.Rect(int(self.x), int(self.y), int(self.width), int(self.height))
     
     def apply_magnetic_force(self, force: Tuple[float, float]) -> None:
-        """Apply magnetic force to enemy."""
+        """Apply magnetic force to enemy.
+
+        Args:
+            force: A tuple (fx, fy) representing the magnetic force vector to apply.
+        """
         if self.is_magnetic:
             self.velocity_x += force[0]
             self.velocity_y += force[1]
     
     def update(self, platforms: List) -> None:
-        """Update enemy position and behavior."""
+        """Update enemy position and behavior.
+
+        Applies gravity, updates position based on velocity, and handles
+        collision detection with platforms.
+
+        Args:
+            platforms: List of platform objects to check for collisions.
+        """
         if not self.alive:
             return
         
@@ -86,15 +109,34 @@ class Enemy:
                     self.velocity_y = 0
     
     def check_player_collision(self, player_rect: Tuple[float, float, float, float]) -> bool:
-        """Check if enemy collides with player."""
+        """Check if enemy collides with player.
+
+        Args:
+            player_rect: The player's bounding rectangle as (x, y, width, height).
+
+        Returns:
+            bool: True if the enemy is alive and collides with the player.
+        """
         return self.alive and check_rect_collision(self.rect, player_rect)
     
     def kill(self) -> None:
-        """Kill the enemy."""
+        """Kill the enemy.
+
+        Sets the enemy's alive state to False, preventing further updates
+        and rendering.
+        """
         self.alive = False
     
     def draw(self, surface: pygame.Surface, camera_offset: Tuple[float, float] = (0, 0)) -> None:
-        """Draw the enemy."""
+        """Draw the enemy.
+
+        Renders the enemy rectangle on the given surface, adjusted for camera
+        offset. Magnetic enemies have a distinct border indicator.
+
+        Args:
+            surface: The pygame surface to draw on.
+            camera_offset: The (x, y) camera offset for scrolling. Defaults to (0, 0).
+        """
         if not self.alive:
             return
         
@@ -111,7 +153,11 @@ class Enemy:
             pygame.draw.rect(surface, (255, 200, 200), rect, 2)
     
     def to_dict(self) -> dict:
-        """Serialize enemy to dictionary."""
+        """Serialize enemy to dictionary.
+
+        Returns:
+            dict: A dictionary containing the enemy's properties for serialization.
+        """
         return {
             'type': 'basic',
             'x': self.x,
@@ -124,7 +170,15 @@ class Enemy:
     
     @classmethod
     def from_dict(cls, data: dict) -> 'Enemy':
-        """Create enemy from dictionary."""
+        """Create enemy from dictionary.
+
+        Args:
+            data: Dictionary containing enemy properties. Required keys: 'x', 'y'.
+                Optional keys: 'width', 'height', 'speed', 'is_magnetic'.
+
+        Returns:
+            Enemy: A new Enemy instance created from the dictionary data.
+        """
         return cls(
             x=data['x'],
             y=data['y'],
@@ -145,13 +199,29 @@ class PatrolEnemy(Enemy):
         patrol_distance: float = 100,
         **kwargs
     ):
+        """Initialize patrol enemy.
+
+        Args:
+            x: Starting X position.
+            y: Starting Y position.
+            patrol_distance: Distance to patrol from the starting position.
+                Defaults to 100.
+            **kwargs: Additional keyword arguments passed to the base Enemy class.
+        """
         super().__init__(x, y, **kwargs)
         self.start_x = x
         self.patrol_distance = patrol_distance
         self.velocity_x = self.speed
     
     def update(self, platforms: List) -> None:
-        """Update patrol enemy behavior."""
+        """Update patrol enemy behavior.
+
+        Handles patrol logic by reversing direction when reaching patrol
+        boundaries, then delegates to the parent update method.
+
+        Args:
+            platforms: List of platform objects to check for collisions.
+        """
         if not self.alive:
             return
         
@@ -166,7 +236,12 @@ class PatrolEnemy(Enemy):
         super().update(platforms)
     
     def to_dict(self) -> dict:
-        """Serialize patrol enemy to dictionary."""
+        """Serialize patrol enemy to dictionary.
+
+        Returns:
+            dict: A dictionary containing the patrol enemy's properties,
+                including patrol-specific attributes.
+        """
         data = super().to_dict()
         data['type'] = 'patrol'
         data['patrol_distance'] = self.patrol_distance
@@ -184,6 +259,15 @@ class FlyingEnemy(Enemy):
         frequency: float = 0.05,
         **kwargs
     ):
+        """Initialize flying enemy.
+
+        Args:
+            x: Starting X position.
+            y: Starting Y position.
+            amplitude: Vertical oscillation amplitude in pixels. Defaults to 50.
+            frequency: Oscillation frequency (radians per frame). Defaults to 0.05.
+            **kwargs: Additional keyword arguments passed to the base Enemy class.
+        """
         super().__init__(x, y, **kwargs)
         self.start_y = y
         self.amplitude = amplitude
@@ -191,7 +275,15 @@ class FlyingEnemy(Enemy):
         self.time = 0.0
     
     def update(self, platforms: List) -> None:
-        """Update flying enemy behavior."""
+        """Update flying enemy behavior.
+
+        Updates position using sinusoidal vertical movement and constant
+        horizontal velocity. Ignores gravity and platform collisions.
+
+        Args:
+            platforms: List of platform objects (unused, but kept for interface
+                consistency with base class).
+        """
         if not self.alive:
             return
         
@@ -204,7 +296,12 @@ class FlyingEnemy(Enemy):
         self.x += self.velocity_x
     
     def to_dict(self) -> dict:
-        """Serialize flying enemy to dictionary."""
+        """Serialize flying enemy to dictionary.
+
+        Returns:
+            dict: A dictionary containing the flying enemy's properties,
+                including flight-specific attributes.
+        """
         data = super().to_dict()
         data['type'] = 'flying'
         data['amplitude'] = self.amplitude
@@ -213,7 +310,19 @@ class FlyingEnemy(Enemy):
 
 
 def create_enemy_from_dict(data: dict) -> Enemy:
-    """Factory function to create enemy from dictionary."""
+    """Factory function to create enemy from dictionary.
+
+    Creates the appropriate Enemy subclass based on the 'type' field
+    in the data dictionary.
+
+    Args:
+        data: Dictionary containing enemy properties. Required keys: 'x', 'y'.
+            The 'type' key determines which enemy class is instantiated:
+            'patrol', 'flying', or 'basic' (default).
+
+    Returns:
+        Enemy: An instance of Enemy, PatrolEnemy, or FlyingEnemy based on type.
+    """
     enemy_type = data.get('type', 'basic')
     
     if enemy_type == 'patrol':

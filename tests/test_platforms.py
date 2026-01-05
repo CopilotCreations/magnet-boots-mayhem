@@ -14,7 +14,11 @@ class TestPlatformInit:
     """Tests for Platform initialization."""
     
     def test_default_initialization(self):
-        """Test platform with default values."""
+        """Test platform with default values.
+
+        Creates a platform with minimal required parameters and verifies
+        that default values for is_magnetic and orientation are set correctly.
+        """
         platform = Platform(100, 200, 150, 30)
         assert platform.x == 100
         assert platform.y == 200
@@ -24,12 +28,20 @@ class TestPlatformInit:
         assert platform.orientation == ORIENTATION_FLOOR
     
     def test_magnetic_platform(self):
-        """Test magnetic platform initialization."""
+        """Test magnetic platform initialization.
+
+        Verifies that a platform can be created with is_magnetic=True
+        and that the property is correctly set.
+        """
         platform = Platform(100, 200, 150, 30, is_magnetic=True)
         assert platform.is_magnetic is True
     
     def test_wall_orientation(self):
-        """Test platform with wall orientation."""
+        """Test platform with wall orientation.
+
+        Verifies that a platform can be created with a wall orientation
+        and that the orientation property is correctly set.
+        """
         platform = Platform(100, 200, 30, 150, orientation=ORIENTATION_WALL_LEFT)
         assert platform.orientation == ORIENTATION_WALL_LEFT
 
@@ -38,17 +50,29 @@ class TestPlatformProperties:
     """Tests for Platform properties."""
     
     def test_rect_property(self):
-        """Test rect property returns correct tuple."""
+        """Test rect property returns correct tuple.
+
+        Verifies that the rect property returns a tuple containing
+        the platform's x, y, width, and height values.
+        """
         platform = Platform(100, 200, 150, 30)
         assert platform.rect == (100, 200, 150, 30)
     
     def test_center_property(self):
-        """Test center property calculates correctly."""
+        """Test center property calculates correctly.
+
+        Verifies that the center property returns the correct x, y
+        coordinates of the platform's center point.
+        """
         platform = Platform(100, 200, 100, 50)
         assert platform.center == (150, 225)
     
     def test_pygame_rect_property(self):
-        """Test pygame_rect property."""
+        """Test pygame_rect property.
+
+        Verifies that the pygame_rect property returns a pygame.Rect object
+        with integer coordinates truncated from float values.
+        """
         platform = Platform(100.5, 200.5, 150, 30)
         rect = platform.pygame_rect
         assert rect.x == 100
@@ -61,7 +85,11 @@ class TestPlatformSurfacePosition:
     """Tests for get_surface_position method."""
     
     def test_floor_surface_position(self):
-        """Test surface position for floor."""
+        """Test surface position for floor.
+
+        Verifies that a floor-oriented platform returns the top surface
+        position with the correct x center, y position, and 'top' side.
+        """
         platform = Platform(100, 200, 100, 30, orientation=ORIENTATION_FLOOR)
         x, y, side = platform.get_surface_position()
         assert x == 150  # Center x
@@ -69,21 +97,33 @@ class TestPlatformSurfacePosition:
         assert side == "top"
     
     def test_ceiling_surface_position(self):
-        """Test surface position for ceiling."""
+        """Test surface position for ceiling.
+
+        Verifies that a ceiling-oriented platform returns the bottom surface
+        position with the correct y position and 'bottom' side.
+        """
         platform = Platform(100, 200, 100, 30, orientation=ORIENTATION_CEILING)
         x, y, side = platform.get_surface_position()
         assert y == 230  # Bottom of platform
         assert side == "bottom"
     
     def test_wall_left_surface_position(self):
-        """Test surface position for left wall."""
+        """Test surface position for left wall.
+
+        Verifies that a left wall-oriented platform returns the right edge
+        surface position with the correct x position and 'right' side.
+        """
         platform = Platform(100, 200, 30, 100, orientation=ORIENTATION_WALL_LEFT)
         x, y, side = platform.get_surface_position()
         assert x == 130  # Right edge of wall
         assert side == "right"
     
     def test_wall_right_surface_position(self):
-        """Test surface position for right wall."""
+        """Test surface position for right wall.
+
+        Verifies that a right wall-oriented platform returns the left edge
+        surface position with the correct x position and 'left' side.
+        """
         platform = Platform(100, 200, 30, 100, orientation=ORIENTATION_WALL_RIGHT)
         x, y, side = platform.get_surface_position()
         assert x == 100  # Left edge of wall
@@ -94,7 +134,11 @@ class TestPlatformPlayerOnSurface:
     """Tests for is_player_on_surface method."""
     
     def test_player_on_floor(self):
-        """Test player standing on floor platform."""
+        """Test player standing on floor platform.
+
+        Verifies that is_player_on_surface returns True when a player's
+        feet are within tolerance of the platform's top surface.
+        """
         platform = Platform(100, 200, 200, 30, orientation=ORIENTATION_FLOOR)
         player_rect = (150, 150, 32, 48)  # Player feet at y=198, just above platform
         player_on = (150, 152, 32, 48)  # Player feet at y=200, on platform
@@ -102,21 +146,33 @@ class TestPlatformPlayerOnSurface:
         assert platform.is_player_on_surface(player_on, tolerance=5) is True
     
     def test_player_not_on_floor(self):
-        """Test player not on floor platform."""
+        """Test player not on floor platform.
+
+        Verifies that is_player_on_surface returns False when a player
+        is too far above the platform's surface.
+        """
         platform = Platform(100, 200, 200, 30, orientation=ORIENTATION_FLOOR)
         player_rect = (150, 100, 32, 48)  # Player too high
         
         assert platform.is_player_on_surface(player_rect, tolerance=5) is False
     
     def test_player_on_ceiling(self):
-        """Test player stuck to ceiling."""
+        """Test player stuck to ceiling.
+
+        Verifies that is_player_on_surface returns True when a player's
+        head is within tolerance of the platform's bottom surface.
+        """
         platform = Platform(100, 100, 200, 30, orientation=ORIENTATION_CEILING)
         player_rect = (150, 130, 32, 48)  # Player head touching ceiling bottom
         
         assert platform.is_player_on_surface(player_rect, tolerance=5) is True
     
     def test_player_on_wall_left(self):
-        """Test player stuck to left wall."""
+        """Test player stuck to left wall.
+
+        Verifies that is_player_on_surface returns True when a player's
+        right side is within tolerance of the wall's right edge.
+        """
         platform = Platform(100, 100, 30, 200, orientation=ORIENTATION_WALL_LEFT)
         player_rect = (68, 150, 32, 48)  # Player right side touching wall
         
@@ -127,12 +183,20 @@ class TestPlatformColor:
     """Tests for get_color method."""
     
     def test_normal_platform_color(self):
-        """Test normal platform color."""
+        """Test normal platform color.
+
+        Verifies that a non-magnetic platform returns the standard
+        COLOR_PLATFORM color value.
+        """
         platform = Platform(100, 200, 100, 30, is_magnetic=False)
         assert platform.get_color() == COLOR_PLATFORM
     
     def test_magnetic_platform_color(self):
-        """Test magnetic platform color."""
+        """Test magnetic platform color.
+
+        Verifies that a magnetic platform returns the
+        COLOR_MAGNETIC_PLATFORM color value.
+        """
         platform = Platform(100, 200, 100, 30, is_magnetic=True)
         assert platform.get_color() == COLOR_MAGNETIC_PLATFORM
 
@@ -141,7 +205,11 @@ class TestPlatformSerialization:
     """Tests for serialization methods."""
     
     def test_to_dict(self):
-        """Test platform serialization to dict."""
+        """Test platform serialization to dict.
+
+        Verifies that to_dict returns a dictionary containing all
+        platform properties with correct values.
+        """
         platform = Platform(100, 200, 150, 30, is_magnetic=True, orientation=ORIENTATION_CEILING)
         data = platform.to_dict()
         
@@ -153,7 +221,11 @@ class TestPlatformSerialization:
         assert data['orientation'] == ORIENTATION_CEILING
     
     def test_from_dict(self):
-        """Test platform deserialization from dict."""
+        """Test platform deserialization from dict.
+
+        Verifies that from_dict creates a Platform instance with all
+        properties correctly restored from the dictionary.
+        """
         data = {
             'x': 150,
             'y': 250,
@@ -173,7 +245,11 @@ class TestPlatformSerialization:
         assert platform.orientation == ORIENTATION_WALL_LEFT
     
     def test_roundtrip_serialization(self):
-        """Test serialization roundtrip preserves data."""
+        """Test serialization roundtrip preserves data.
+
+        Verifies that a platform can be serialized to dict and
+        deserialized back with all properties preserved.
+        """
         original = Platform(100, 200, 150, 30, is_magnetic=True, orientation=ORIENTATION_CEILING)
         data = original.to_dict()
         restored = Platform.from_dict(data)
@@ -190,7 +266,11 @@ class TestMovingPlatformInit:
     """Tests for MovingPlatform initialization."""
     
     def test_initialization(self):
-        """Test moving platform initialization."""
+        """Test moving platform initialization.
+
+        Verifies that a MovingPlatform is created with correct start/end
+        positions, speed, and default progress and direction values.
+        """
         platform = MovingPlatform(100, 200, 150, 30, end_x=300, end_y=200, speed=3.0)
         assert platform.x == 100
         assert platform.y == 200
@@ -207,7 +287,11 @@ class TestMovingPlatformUpdate:
     """Tests for MovingPlatform update method."""
     
     def test_movement_toward_end(self):
-        """Test platform moves toward end point."""
+        """Test platform moves toward end point.
+
+        Verifies that calling update() causes the platform to move
+        in the direction of its end position.
+        """
         platform = MovingPlatform(100, 200, 50, 20, end_x=200, end_y=200, speed=2.0)
         initial_x = platform.x
         
@@ -217,7 +301,11 @@ class TestMovingPlatformUpdate:
         assert platform.x > initial_x
     
     def test_direction_reversal_at_end(self):
-        """Test direction reverses at end point."""
+        """Test direction reverses at end point.
+
+        Verifies that the platform reverses direction when it reaches
+        the end point, keeping progress within valid bounds.
+        """
         platform = MovingPlatform(100, 200, 50, 20, end_x=110, end_y=200, speed=100.0)
         
         # Move to end - need more iterations since speed * 0.01 per frame
@@ -229,7 +317,11 @@ class TestMovingPlatformUpdate:
         assert platform.progress >= 0 and platform.progress <= 1
     
     def test_direction_reversal_at_start(self):
-        """Test direction reverses at start point."""
+        """Test direction reverses at start point.
+
+        Verifies that the platform reverses direction when it returns
+        to the start point, keeping progress within valid bounds.
+        """
         platform = MovingPlatform(100, 200, 50, 20, end_x=110, end_y=200, speed=100.0)
         
         # Move to end and back
@@ -244,21 +336,33 @@ class TestMovingPlatformVelocity:
     """Tests for get_velocity method."""
     
     def test_horizontal_velocity(self):
-        """Test velocity for horizontal movement."""
+        """Test velocity for horizontal movement.
+
+        Verifies that a platform moving horizontally returns a velocity
+        with a non-zero x component and zero y component.
+        """
         platform = MovingPlatform(100, 200, 50, 20, end_x=200, end_y=200, speed=2.0)
         velocity = platform.get_velocity()
         assert velocity[0] > 0  # Moving right
         assert velocity[1] == 0  # No vertical movement
     
     def test_vertical_velocity(self):
-        """Test velocity for vertical movement."""
+        """Test velocity for vertical movement.
+
+        Verifies that a platform moving vertically returns a velocity
+        with a zero x component and non-zero y component.
+        """
         platform = MovingPlatform(100, 200, 50, 20, end_x=100, end_y=300, speed=2.0)
         velocity = platform.get_velocity()
         assert velocity[0] == 0  # No horizontal movement
         assert velocity[1] > 0  # Moving down
     
     def test_reversed_velocity(self):
-        """Test velocity direction reverses."""
+        """Test velocity direction reverses.
+
+        Verifies that changing the platform's direction property
+        results in a negated velocity vector.
+        """
         platform = MovingPlatform(100, 200, 50, 20, end_x=200, end_y=200, speed=2.0)
         
         # Get initial velocity
@@ -275,7 +379,11 @@ class TestMovingPlatformSerialization:
     """Tests for MovingPlatform serialization."""
     
     def test_to_dict(self):
-        """Test moving platform serialization."""
+        """Test moving platform serialization.
+
+        Verifies that to_dict returns a dictionary containing all
+        MovingPlatform properties including end positions and speed.
+        """
         platform = MovingPlatform(100, 200, 50, 20, end_x=300, end_y=200, speed=3.0, is_magnetic=True)
         data = platform.to_dict()
         
@@ -286,7 +394,11 @@ class TestMovingPlatformSerialization:
         assert data['moving'] is True
     
     def test_from_dict(self):
-        """Test moving platform deserialization."""
+        """Test moving platform deserialization.
+
+        Verifies that from_dict creates a MovingPlatform instance with
+        all properties correctly restored from the dictionary.
+        """
         data = {
             'x': 100,
             'y': 200,
